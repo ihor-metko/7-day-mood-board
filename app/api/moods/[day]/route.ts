@@ -15,7 +15,7 @@ export async function PUT(
     if (!WEEKDAYS.includes(day as Weekday)) {
       return NextResponse.json(
         { error: 'Invalid day' },
-        { status: 400 }
+        { status: 404 }
       );
     }
     
