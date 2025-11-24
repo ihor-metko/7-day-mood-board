@@ -30,7 +30,7 @@ export default function DayTile({ day, mood, onOpen }: DayTileProps) {
       <div className="text-2xl h-8">
         {moodData ? moodData.emoji : ''}
       </div>
-      <div className="text-sm font-medium text-gray-700">
+      <div className={`text-sm font-medium ${moodData ? 'text-gray-900' : 'text-gray-700'}`}>
         {day}
       </div>
     </button>
