@@ -28,3 +28,14 @@ export const MOODS: MoodDefinition[] = [
   { key: 'relaxed', label: 'Relaxed', color: '#A78BFA', emoji: '🧘' },
   { key: 'neutral', label: 'Neutral', color: '#64748B', emoji: '😐' },
 ];
+
+export type MoodsApiDay = {
+  day: Weekday;
+  mood: Mood | null;
+};
+
+export type MoodsApiResponse = {
+  version: number;
+  days: MoodsApiDay[];
+  clientRequestId?: number;
+};
