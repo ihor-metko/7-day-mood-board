@@ -24,7 +24,6 @@ export default function MoodPicker({ onChoose, autoFocus }: MoodPickerProps) {
           key={mood.key}
           ref={index === 0 ? firstButtonRef : null}
           data-mood={mood.key}
-          aria-pressed="false"
           onClick={() => onChoose(mood.key)}
           className="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-gray-200 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
         >

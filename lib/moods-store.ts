@@ -13,10 +13,10 @@ export async function readStore(): Promise<MoodsApiResponse> {
       version: 0,
       days: WEEKDAYS.map(d => ({ day: d, mood: null })),
     };
-    
+
     const dataDir = path.dirname(STORE_PATH);
     await fs.mkdir(dataDir, { recursive: true });
-    
+
     await fs.writeFile(STORE_PATH, JSON.stringify(defaultState, null, 2), 'utf-8');
     return defaultState;
   }
@@ -28,17 +28,17 @@ export async function updateDayStore(
   clientRequestId?: number
 ): Promise<MoodsApiResponse> {
   const state = await readStore();
-  
+
   const dayEntry = state.days.find(d => d.day === day);
   if (dayEntry) {
     dayEntry.mood = mood;
   }
-  
+
   state.version += 1;
-  
+
   await fs.writeFile(STORE_PATH, JSON.stringify(state, null, 2), 'utf-8');
-  
-  return clientRequestId !== undefined 
+
+  return clientRequestId !== undefined
     ? { ...state, clientRequestId }
     : state;
 }

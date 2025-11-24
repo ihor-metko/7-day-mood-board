@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const delay = Math.floor(Math.random() * (1200 - 300 + 1)) + 300;
     await new Promise(resolve => setTimeout(resolve, delay));
-    
+
     const state = await readStore();
     return NextResponse.json(state);
   } catch (error) {

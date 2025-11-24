@@ -2,11 +2,11 @@ import { Mood, Weekday, MoodsApiResponse } from '@/types/mood';
 
 export async function fetchMoods(): Promise<MoodsApiResponse> {
   const response = await fetch('/api/moods');
-  
+
   if (!response.ok) {
     throw new Error(`Failed to fetch moods: ${response.status}`);
   }
-  
+
   return response.json();
 }
 
@@ -22,10 +22,10 @@ export async function putMood(
     },
     body: JSON.stringify({ mood, clientRequestId }),
   });
-  
+
   if (!response.ok) {
     throw new Error(`Failed to update mood: ${response.status}`);
   }
-  
+
   return response.json();
 }

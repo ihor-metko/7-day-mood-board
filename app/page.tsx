@@ -34,11 +34,11 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
           7-Day Mood Board
         </h1>
-        
+
         {isLoading && (
           <div className="text-center mb-4 text-gray-600">Loading moods...</div>
         )}
-        
+
         {error && (
           <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
             <div className="flex justify-between items-center">
@@ -52,7 +52,7 @@ export default function Home() {
             </div>
           </div>
         )}
-        
+
         <div className="flex flex-wrap justify-center gap-4">
           {WEEKDAYS.map((day) => (
             <DayTile key={day} day={day} mood={moods[day]} onOpen={openModal} />
