@@ -11,7 +11,6 @@ export async function PUT(
   try {
     const { day } = await params;
     
-    // Validate day parameter - requirement specifies 404 for invalid day
     if (!WEEKDAYS.includes(day as Weekday)) {
       return NextResponse.json(
         { error: 'Invalid day' },
@@ -19,11 +18,9 @@ export async function PUT(
       );
     }
     
-    // Parse request body
     const body = await request.json();
     const { mood, clientRequestId } = body;
     
-    // Validate mood (can be null or one of allowed moods)
     if (mood !== null && !ALLOWED_MOODS.includes(mood)) {
       return NextResponse.json(
         { error: 'Invalid mood' },
@@ -31,7 +28,6 @@ export async function PUT(
       );
     }
     
-    // Validate clientRequestId if provided
     if (clientRequestId !== undefined && typeof clientRequestId !== 'number') {
       return NextResponse.json(
         { error: 'Invalid clientRequestId' },
@@ -39,11 +35,9 @@ export async function PUT(
       );
     }
     
-    // Add artificial latency (300-1200ms)
     const delay = Math.floor(Math.random() * (1200 - 300 + 1)) + 300;
     await new Promise(resolve => setTimeout(resolve, delay));
     
-    // Update store
     const state = await updateDayStore(
       day as Weekday,
       mood as Mood | null,

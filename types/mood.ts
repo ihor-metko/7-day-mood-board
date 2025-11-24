@@ -15,9 +15,9 @@ export const WEEKDAYS: Weekday[] = [
 
 export type MoodDefinition = {
   key: Mood;
-  label: string;   // human label
-  color: string;   // hex color
-  emoji: string;   // emoji character
+  label: string;
+  color: string;
+  emoji: string;
 };
 
 export const MOODS: MoodDefinition[] = [
