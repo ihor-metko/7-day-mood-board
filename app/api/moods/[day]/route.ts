@@ -11,7 +11,7 @@ export async function PUT(
   try {
     const { day } = await params;
     
-    // Validate day parameter
+    // Validate day parameter - requirement specifies 404 for invalid day
     if (!WEEKDAYS.includes(day as Weekday)) {
       return NextResponse.json(
         { error: 'Invalid day' },
