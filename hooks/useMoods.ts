@@ -101,16 +101,22 @@ export function useMoods(): UseMoodsResult {
         // If this is not the latest request, ignore it (out-of-order reply)
       })
       .catch(err => {
-        // On error, remove optimistic overlay and show error
-        setOptimisticOverlay(prev => {
-          const newOverlay = { ...prev };
-          delete newOverlay[day];
-          return newOverlay;
-        });
+        // On error, check if this is still the latest request
+        const inflight = inflightRequests.current.get(day);
         
-        inflightRequests.current.delete(day);
-        
-        setError(`Failed to update ${day}: ${err.message}`);
+        if (inflight && inflight.clientRequestId === clientRequestId) {
+          // Only remove optimistic overlay and show error if this is the latest request
+          setOptimisticOverlay(prev => {
+            const newOverlay = { ...prev };
+            delete newOverlay[day];
+            return newOverlay;
+          });
+          
+          inflightRequests.current.delete(day);
+          
+          setError(`Failed to update ${day}: ${err.message}`);
+        }
+        // If this is not the latest request, silently ignore the error
       });
   }, []);
   
