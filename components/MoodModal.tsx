@@ -9,10 +9,9 @@ type MoodModalProps = {
   day: Weekday | null;
   onClose: () => void;
   onSelect: (day: Weekday, mood: Mood) => void;
-  initialFocusRef?: React.RefObject<HTMLElement>;
 };
 
-export default function MoodModal({ isOpen, day, onClose, onSelect, initialFocusRef }: MoodModalProps) {
+export default function MoodModal({ isOpen, day, onClose, onSelect }: MoodModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,7 +75,7 @@ export default function MoodModal({ isOpen, day, onClose, onSelect, initialFocus
         <h2 id="mood-dialog-title" className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">
           Choose mood for {day}
         </h2>
-        <MoodPicker onChoose={handleSelect} onCancel={onClose} autoFocus={true} />
+        <MoodPicker onChoose={handleSelect} autoFocus={true} />
         <button
           onClick={onClose}
           aria-label="Close modal"

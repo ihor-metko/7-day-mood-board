@@ -5,11 +5,10 @@ import { Mood, MOODS } from '@/types/mood';
 
 type MoodPickerProps = {
   onChoose: (mood: Mood) => void;
-  onCancel?: () => void;
   autoFocus?: boolean;
 };
 
-export default function MoodPicker({ onChoose, onCancel, autoFocus }: MoodPickerProps) {
+export default function MoodPicker({ onChoose, autoFocus }: MoodPickerProps) {
   const firstButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
