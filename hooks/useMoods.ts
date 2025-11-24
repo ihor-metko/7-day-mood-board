@@ -17,22 +17,18 @@ type InflightRequest = {
 };
 
 export function useMoods(): UseMoodsResult {
-  // Authoritative server state
   const [serverMoods, setServerMoods] = useState<Record<Weekday, Mood | null>>(() =>
     WEEKDAYS.reduce((acc, day) => ({ ...acc, [day]: null }), {} as Record<Weekday, Mood | null>)
   );
   
-  // Optimistic overlay
   const [optimisticOverlay, setOptimisticOverlay] = useState<Partial<Record<Weekday, Mood | null>>>({});
   
-  // Inflight tracking
   const inflightRequests = useRef<Map<Weekday, InflightRequest>>(new Map());
   const nextClientRequestId = useRef<number>(1);
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Load initial state
   useEffect(() => {
     let mounted = true;
     
@@ -64,23 +60,17 @@ export function useMoods(): UseMoodsResult {
   }, []);
   
   const updateMood = useCallback((day: Weekday, mood: Mood | null) => {
-    // Assign clientRequestId
     const clientRequestId = nextClientRequestId.current++;
     
-    // Apply optimistic update immediately
     setOptimisticOverlay(prev => ({ ...prev, [day]: mood }));
     
-    // Track inflight request
     inflightRequests.current.set(day, { clientRequestId, day, mood });
     
-    // Send request in background
     putMood(day, mood, clientRequestId)
       .then(response => {
-        // Check if this is still the latest request for this day
         const inflight = inflightRequests.current.get(day);
         
         if (inflight && inflight.clientRequestId === response.clientRequestId) {
-          // This is the latest request, reconcile with server state
           const moodsRecord = response.days.reduce((acc, dayData) => {
             acc[dayData.day] = dayData.mood;
             return acc;
@@ -88,24 +78,19 @@ export function useMoods(): UseMoodsResult {
           
           setServerMoods(moodsRecord);
           
-          // Remove optimistic overlay for this day
           setOptimisticOverlay(prev => {
             const newOverlay = { ...prev };
             delete newOverlay[day];
             return newOverlay;
           });
           
-          // Remove from inflight tracking
           inflightRequests.current.delete(day);
         }
-        // If this is not the latest request, ignore it (out-of-order reply)
       })
       .catch(err => {
-        // On error, check if this is still the latest request
         const inflight = inflightRequests.current.get(day);
         
         if (inflight && inflight.clientRequestId === clientRequestId) {
-          // Only remove optimistic overlay and show error if this is the latest request
           setOptimisticOverlay(prev => {
             const newOverlay = { ...prev };
             delete newOverlay[day];
@@ -116,11 +101,9 @@ export function useMoods(): UseMoodsResult {
           
           setError(`Failed to update ${day}: ${err.message}`);
         }
-        // If this is not the latest request, silently ignore the error
       });
   }, []);
   
-  // Compute final moods (server state + optimistic overlay)
   const moods = { ...serverMoods, ...optimisticOverlay };
   
   return {

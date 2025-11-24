@@ -24,7 +24,6 @@ export default function MoodModal({ isOpen, day, onClose, onSelect }: MoodModalP
         return;
       }
 
-      // Focus trap implementation
       if (e.key === 'Tab' && dialogRef.current) {
         const focusableElements = dialogRef.current.querySelectorAll<HTMLElement>(
           'button[data-mood], button[aria-label="Close modal"]'
@@ -33,13 +32,11 @@ export default function MoodModal({ isOpen, day, onClose, onSelect }: MoodModalP
         const lastElement = focusableElements[focusableElements.length - 1];
 
         if (e.shiftKey) {
-          // Shift + Tab
           if (document.activeElement === firstElement) {
             e.preventDefault();
             lastElement?.focus();
           }
         } else {
-          // Tab
           if (document.activeElement === lastElement) {
             e.preventDefault();
             firstElement?.focus();
