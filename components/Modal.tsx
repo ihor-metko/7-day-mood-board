@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback, ReactNode } from 'react'
+import { useEffect, useRef, useCallback, ReactNode, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 
 type ModalProps = {
@@ -8,6 +8,14 @@ type ModalProps = {
   onClose: () => void
   children: ReactNode
   ariaLabelledBy?: string
+}
+
+function useIsMounted() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
 }
 
 export default function Modal({
@@ -18,6 +26,7 @@ export default function Modal({
 }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const previousActiveElement = useRef<Element | null>(null)
+  const isMounted = useIsMounted()
 
   const getFocusableElements = useCallback(() => {
     if (!dialogRef.current) return []
@@ -37,6 +46,10 @@ export default function Modal({
     if (focusableElements.length > 0) {
       focusableElements[0].focus()
     }
+  }, [isOpen, getFocusableElements])
+
+  useEffect(() => {
+    if (!isOpen) return
 
     return () => {
       if (
@@ -46,7 +59,7 @@ export default function Modal({
         previousActiveElement.current.focus()
       }
     }
-  }, [isOpen, getFocusableElements])
+  }, [isOpen])
 
   useEffect(() => {
     if (!isOpen) return
@@ -102,8 +115,10 @@ export default function Modal({
     </div>
   )
 
-  const modalRoot = document.getElementById('modal-root')
-  if (!modalRoot) return modalContent
+  if (!isMounted) return modalContent
 
-  return createPortal(modalContent, modalRoot)
+  const portalRoot = document.getElementById('modal-root')
+  if (!portalRoot) return modalContent
+
+  return createPortal(modalContent, portalRoot)
 }
