@@ -1,0 +1,109 @@
+'use client'
+
+import { useEffect, useRef, useCallback, ReactNode } from 'react'
+import { createPortal } from 'react-dom'
+
+type ModalProps = {
+  isOpen: boolean
+  onClose: () => void
+  children: ReactNode
+  ariaLabelledBy?: string
+}
+
+export default function Modal({
+  isOpen,
+  onClose,
+  children,
+  ariaLabelledBy,
+}: ModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const previousActiveElement = useRef<Element | null>(null)
+
+  const getFocusableElements = useCallback(() => {
+    if (!dialogRef.current) return []
+    return Array.from(
+      dialogRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter((el) => !el.hasAttribute('disabled'))
+  }, [])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    previousActiveElement.current = document.activeElement
+
+    const focusableElements = getFocusableElements()
+    if (focusableElements.length > 0) {
+      focusableElements[0].focus()
+    }
+
+    return () => {
+      if (
+        previousActiveElement.current &&
+        previousActiveElement.current instanceof HTMLElement
+      ) {
+        previousActiveElement.current.focus()
+      }
+    }
+  }, [isOpen, getFocusableElements])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onClose()
+        return
+      }
+
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusableElements = getFocusableElements()
+        if (focusableElements.length === 0) return
+
+        const firstElement = focusableElements[0]
+        const lastElement = focusableElements[focusableElements.length - 1]
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault()
+            lastElement.focus()
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault()
+            firstElement.focus()
+          }
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen, onClose, getFocusableElements])
+
+  if (!isOpen) return null
+
+  const modalContent = (
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={ariaLabelledBy}
+        className="bg-white dark:bg-gray-900 rounded-lg p-4 w-80"
+      >
+        {children}
+      </div>
+    </div>
+  )
+
+  const modalRoot = document.getElementById('modal-root')
+  if (!modalRoot) return modalContent
+
+  return createPortal(modalContent, modalRoot)
+}

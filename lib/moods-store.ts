@@ -1,44 +1,46 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { Mood, Weekday, WEEKDAYS, MoodsApiResponse } from '@/types/mood';
+import { promises as fs } from 'fs'
+import path from 'path'
+import { Mood, Weekday, WEEKDAYS, MoodsApiResponse } from '@/types/mood'
 
-const STORE_PATH = path.join(process.cwd(), 'data', 'moods.json');
+const STORE_PATH = path.join(process.cwd(), 'data', 'moods.json')
 
 export async function readStore(): Promise<MoodsApiResponse> {
   try {
-    const data = await fs.readFile(STORE_PATH, 'utf-8');
-    return JSON.parse(data) as MoodsApiResponse;
+    const data = await fs.readFile(STORE_PATH, 'utf-8')
+    return JSON.parse(data) as MoodsApiResponse
   } catch {
     const defaultState: MoodsApiResponse = {
       version: 0,
-      days: WEEKDAYS.map(d => ({ day: d, mood: null })),
-    };
-    
-    const dataDir = path.dirname(STORE_PATH);
-    await fs.mkdir(dataDir, { recursive: true });
-    
-    await fs.writeFile(STORE_PATH, JSON.stringify(defaultState, null, 2), 'utf-8');
-    return defaultState;
+      days: WEEKDAYS.map((d) => ({ day: d, mood: null })),
+    }
+
+    const dataDir = path.dirname(STORE_PATH)
+    await fs.mkdir(dataDir, { recursive: true })
+
+    await fs.writeFile(
+      STORE_PATH,
+      JSON.stringify(defaultState, null, 2),
+      'utf-8',
+    )
+    return defaultState
   }
 }
 
 export async function updateDayStore(
   day: Weekday,
   mood: Mood | null,
-  clientRequestId?: number
+  clientRequestId?: number,
 ): Promise<MoodsApiResponse> {
-  const state = await readStore();
-  
-  const dayEntry = state.days.find(d => d.day === day);
+  const state = await readStore()
+
+  const dayEntry = state.days.find((d) => d.day === day)
   if (dayEntry) {
-    dayEntry.mood = mood;
+    dayEntry.mood = mood
   }
-  
-  state.version += 1;
-  
-  await fs.writeFile(STORE_PATH, JSON.stringify(state, null, 2), 'utf-8');
-  
-  return clientRequestId !== undefined 
-    ? { ...state, clientRequestId }
-    : state;
+
+  state.version += 1
+
+  await fs.writeFile(STORE_PATH, JSON.stringify(state, null, 2), 'utf-8')
+
+  return clientRequestId !== undefined ? { ...state, clientRequestId } : state
 }
