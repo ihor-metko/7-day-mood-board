@@ -4,6 +4,8 @@ import { Mood, Weekday, WEEKDAYS, MoodsApiResponse } from '@/types/mood'
 
 const STORE_PATH = path.join(process.cwd(), 'data', 'moods.json')
 
+let writeQueue: Promise<void> = Promise.resolve()
+
 export async function readStore(): Promise<MoodsApiResponse> {
   try {
     const data = await fs.readFile(STORE_PATH, 'utf-8')
@@ -31,16 +33,27 @@ export async function updateDayStore(
   mood: Mood | null,
   clientRequestId?: number,
 ): Promise<MoodsApiResponse> {
-  const state = await readStore()
+  return new Promise<MoodsApiResponse>((resolve, reject) => {
+    const previousQueue = writeQueue
+    writeQueue = previousQueue.finally().then(async () => {
+      try {
+        const state = await readStore()
 
-  const dayEntry = state.days.find((d) => d.day === day)
-  if (dayEntry) {
-    dayEntry.mood = mood
-  }
+        const dayEntry = state.days.find((d) => d.day === day)
+        if (dayEntry) {
+          dayEntry.mood = mood
+        }
 
-  state.version += 1
+        state.version += 1
 
-  await fs.writeFile(STORE_PATH, JSON.stringify(state, null, 2), 'utf-8')
+        await fs.writeFile(STORE_PATH, JSON.stringify(state, null, 2), 'utf-8')
 
-  return clientRequestId !== undefined ? { ...state, clientRequestId } : state
+        const result =
+          clientRequestId !== undefined ? { ...state, clientRequestId } : state
+        resolve(result)
+      } catch (error) {
+        reject(error)
+      }
+    })
+  })
 }
