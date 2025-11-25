@@ -5,7 +5,6 @@ import {
   useRef,
   useCallback,
   ReactNode,
-  useSyncExternalStore,
 } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -16,14 +15,6 @@ type ModalProps = {
   ariaLabelledBy?: string
 }
 
-function useIsMounted() {
-  return useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  )
-}
-
 export default function Modal({
   isOpen,
   onClose,
@@ -32,7 +23,6 @@ export default function Modal({
 }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const previousActiveElement = useRef<Element | null>(null)
-  const isMounted = useIsMounted()
 
   const getFocusableElements = useCallback(() => {
     if (!dialogRef.current) return []
@@ -67,48 +57,10 @@ export default function Modal({
     }
   }, [isOpen])
 
-  useEffect(() => {
-    if (!isOpen) return
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        onClose()
-        return
-      }
-
-      if (e.key === 'Tab' && dialogRef.current) {
-        const focusableElements = getFocusableElements()
-        if (focusableElements.length === 0) return
-
-        const firstElement = focusableElements[0]
-        const lastElement = focusableElements[focusableElements.length - 1]
-
-        if (e.shiftKey) {
-          if (document.activeElement === firstElement) {
-            e.preventDefault()
-            lastElement.focus()
-          }
-        } else {
-          if (document.activeElement === lastElement) {
-            e.preventDefault()
-            firstElement.focus()
-          }
-        }
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isOpen, onClose, getFocusableElements])
-
   if (!isOpen) return null
 
   const modalContent = (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div
         ref={dialogRef}
         role="dialog"
@@ -120,8 +72,6 @@ export default function Modal({
       </div>
     </div>
   )
-
-  if (!isMounted) return modalContent
 
   const portalRoot = document.getElementById('modal-root')
   if (!portalRoot) return modalContent
