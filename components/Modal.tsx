@@ -1,6 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useCallback, ReactNode, useSyncExternalStore } from 'react'
+import {
+  useEffect,
+  useRef,
+  useCallback,
+  ReactNode,
+  useSyncExternalStore,
+} from 'react'
 import { createPortal } from 'react-dom'
 
 type ModalProps = {
