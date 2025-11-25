@@ -19,6 +19,18 @@ export default function MoodBoardClient({
     useMoods(initialMoods)
   const [openDay, setOpenDay] = useState<Weekday | null>(null)
   const openerRef = useRef<HTMLElement | null>(null)
+  const tileRefs = useRef<Map<Weekday, HTMLButtonElement>>(new Map())
+
+  const setTileRef = useCallback(
+    (day: Weekday, el: HTMLButtonElement | null) => {
+      if (el) {
+        tileRefs.current.set(day, el)
+      } else {
+        tileRefs.current.delete(day)
+      }
+    },
+    [],
+  )
 
   const openModal = useCallback((day: Weekday, opener?: HTMLElement | null) => {
     setOpenDay(day)
@@ -38,6 +50,24 @@ export default function MoodBoardClient({
       closeModal()
     },
     [updateMood, closeModal],
+  )
+
+  const handleTileKeyDown = useCallback(
+    (e: React.KeyboardEvent, day: Weekday) => {
+      const idx = weekdays.indexOf(day)
+      if (idx === -1) return
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        const prevIdx = (idx - 1 + weekdays.length) % weekdays.length
+        tileRefs.current.get(weekdays[prevIdx])?.focus()
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        const nextIdx = (idx + 1) % weekdays.length
+        tileRefs.current.get(weekdays[nextIdx])?.focus()
+      }
+    },
+    [weekdays],
   )
 
   return (
@@ -62,7 +92,15 @@ export default function MoodBoardClient({
 
       <div className="flex flex-wrap justify-center gap-4">
         {weekdays.map((day) => (
-          <DayTile key={day} day={day} mood={moods[day]} onOpen={openModal} />
+          <DayTile
+            key={day}
+            day={day}
+            mood={moods[day]}
+            onOpen={openModal}
+            isSelected={openDay === day}
+            onKeyDown={handleTileKeyDown}
+            setRef={setTileRef}
+          />
         ))}
       </div>
 
