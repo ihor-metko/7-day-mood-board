@@ -1,7 +1,6 @@
 import MoodBoard from '@/components/MoodBoard'
 import WeekdayHeader from '@/components/WeekdayHeader'
 
-// Disable static generation to ensure fresh data on each request
 export const dynamic = 'force-dynamic'
 
 export default function Home() {
