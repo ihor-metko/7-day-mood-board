@@ -35,27 +35,28 @@ export async function updateDayStore(
   clientRequestId?: number,
 ): Promise<MoodsApiResponse> {
   // Queue this write operation to ensure serialization
-  let result: MoodsApiResponse
+  return new Promise<MoodsApiResponse>((resolve, reject) => {
+    // Chain onto queue, always continuing the queue even if this operation fails
+    const previousQueue = writeQueue
+    writeQueue = previousQueue.finally().then(async () => {
+      try {
+        const state = await readStore()
 
-  const operation = async (): Promise<void> => {
-    const state = await readStore()
+        const dayEntry = state.days.find((d) => d.day === day)
+        if (dayEntry) {
+          dayEntry.mood = mood
+        }
 
-    const dayEntry = state.days.find((d) => d.day === day)
-    if (dayEntry) {
-      dayEntry.mood = mood
-    }
+        state.version += 1
 
-    state.version += 1
+        await fs.writeFile(STORE_PATH, JSON.stringify(state, null, 2), 'utf-8')
 
-    await fs.writeFile(STORE_PATH, JSON.stringify(state, null, 2), 'utf-8')
-
-    result =
-      clientRequestId !== undefined ? { ...state, clientRequestId } : state
-  }
-
-  // Chain this operation onto the queue
-  writeQueue = writeQueue.then(operation, operation)
-  await writeQueue
-
-  return result!
+        const result =
+          clientRequestId !== undefined ? { ...state, clientRequestId } : state
+        resolve(result)
+      } catch (error) {
+        reject(error)
+      }
+    })
+  })
 }
