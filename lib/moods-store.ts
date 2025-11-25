@@ -4,6 +4,9 @@ import { Mood, Weekday, WEEKDAYS, MoodsApiResponse } from '@/types/mood'
 
 const STORE_PATH = path.join(process.cwd(), 'data', 'moods.json')
 
+// Simple write queue to serialize file operations
+let writeQueue: Promise<void> = Promise.resolve()
+
 export async function readStore(): Promise<MoodsApiResponse> {
   try {
     const data = await fs.readFile(STORE_PATH, 'utf-8')
@@ -31,16 +34,28 @@ export async function updateDayStore(
   mood: Mood | null,
   clientRequestId?: number,
 ): Promise<MoodsApiResponse> {
-  const state = await readStore()
+  // Queue this write operation to ensure serialization
+  let result: MoodsApiResponse
 
-  const dayEntry = state.days.find((d) => d.day === day)
-  if (dayEntry) {
-    dayEntry.mood = mood
+  const operation = async (): Promise<void> => {
+    const state = await readStore()
+
+    const dayEntry = state.days.find((d) => d.day === day)
+    if (dayEntry) {
+      dayEntry.mood = mood
+    }
+
+    state.version += 1
+
+    await fs.writeFile(STORE_PATH, JSON.stringify(state, null, 2), 'utf-8')
+
+    result =
+      clientRequestId !== undefined ? { ...state, clientRequestId } : state
   }
 
-  state.version += 1
+  // Chain this operation onto the queue
+  writeQueue = writeQueue.then(operation, operation)
+  await writeQueue
 
-  await fs.writeFile(STORE_PATH, JSON.stringify(state, null, 2), 'utf-8')
-
-  return clientRequestId !== undefined ? { ...state, clientRequestId } : state
+  return result!
 }
