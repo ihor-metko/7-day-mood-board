@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, ReactNode } from 'react'
+import { useEffect, useRef, useSyncExternalStore, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
 type ModalProps = {
@@ -8,6 +8,18 @@ type ModalProps = {
   onClose: () => void
   children: ReactNode
   ariaLabelledBy?: string
+}
+
+function subscribe() {
+  return () => {}
+}
+
+function getSnapshot() {
+  return true
+}
+
+function getServerSnapshot() {
+  return false
 }
 
 export default function Modal({
@@ -18,6 +30,11 @@ export default function Modal({
 }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const previousActiveElement = useRef<Element | null>(null)
+  const isClient = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot,
+  )
 
   useEffect(() => {
     if (!isOpen) return
@@ -69,7 +86,7 @@ export default function Modal({
     }
   }, [isOpen])
 
-  if (!isOpen) return null
+  if (!isOpen || !isClient) return null
 
   const modalContent = (
     <div
@@ -94,7 +111,7 @@ export default function Modal({
 
   const portalRoot = document.getElementById('modal-root')
   if (!portalRoot) {
-    return modalContent
+    return null
   }
 
   return createPortal(modalContent, portalRoot)

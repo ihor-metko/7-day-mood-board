@@ -1,7 +1,7 @@
 'use server'
 
 import { readStore, updateDayStore } from '@/lib/moods-store'
-import { Mood, Weekday, MoodsApiResponse, MOODS } from '@/types/mood'
+import { Mood, Weekday, MoodsApiResponse, MOODS, WEEKDAYS } from '@/types/mood'
 
 const ALLOWED_MOODS = MOODS.map((m) => m.key)
 
@@ -21,7 +21,7 @@ export async function setMood(
   mood: Mood | null,
   clientRequestId?: number,
 ): Promise<MoodsApiResponse> {
-  if (!Object.values(Weekday).includes(day)) {
+  if (!WEEKDAYS.includes(day)) {
     throw new Error('Invalid day')
   }
 
