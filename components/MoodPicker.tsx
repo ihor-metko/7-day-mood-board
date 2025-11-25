@@ -60,7 +60,7 @@ export default function MoodPicker({ onChoose, autoFocus }: MoodPickerProps) {
   }, [])
 
   return (
-    <div className="grid grid-cols-2 gap-3" role="listbox">
+    <div className="grid grid-cols-2 gap-3" role="listbox" aria-label="Mood options">
       {MOODS.map((mood, index) => (
         <MoodOption
           key={mood.key}

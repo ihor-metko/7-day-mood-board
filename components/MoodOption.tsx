@@ -24,9 +24,9 @@ export default function MoodOption({
       ref={buttonRef}
       data-mood={mood.key}
       role="option"
-      tabIndex={0}
+      tabIndex={isFocused ? 0 : -1}
       aria-label={`${mood.label} mood`}
-      aria-selected={isFocused}
+      aria-selected={isFocused ? 'true' : 'false'}
       onClick={onSelect}
       onKeyDown={onKeyDown}
       onFocus={onFocus}
